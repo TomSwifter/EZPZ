@@ -16,6 +16,23 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tomeraharoni/Documents/Pr
 # We will receive messages that Facebook sends our bot at this endpoint
 
 
+@app.route("/dialogflow", methods=['POST'])
+def webhook():
+    req = request.get_json(silent=True, force=True)
+
+    print("Request:")
+    print(json.dumps(req, indent=4))
+
+    # res = makeWebhookResult(req)
+
+    # res = json.dumps(res, indent=4)
+    # print(res)
+    # r = make_response(res)
+    # r.headers['Content-Type'] = 'application/json'
+    # return r
+    return "yea"
+
+
 @app.route("/bot", methods=['GET', 'POST'])
 def receive_message():
     if request.method == 'GET':

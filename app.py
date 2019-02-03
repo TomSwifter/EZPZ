@@ -6,6 +6,7 @@ import json
 import urllib
 import json
 import os
+import requests
 
 app = Flask(__name__)
 ACCESS_TOKEN = 'EAAEW1dXyjCIBABM7snAgcZCD1YCWdk0Lh5UIUUdZB9IRzjuChnoAnskAHMFhYVV6WBjbZCZAd5cFD5QQIod6URsa7fRKIuQ0ydJlQKXo3ZAiSRYzZCDdLG1PEJPv6SbUBZBNsJ5ZBnBZArlAFFA62QbCE4rzScSVwssRsel2YaokZArAZDZD'
@@ -13,28 +14,10 @@ VERIFY_TOKEN = 'TOO_EZ'
 bot = Bot(ACCESS_TOKEN)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tomeraharoni/Documents/Projects/devfest/ezpz-test-29a9b838799d.json"
 
-# We will receive messages that Facebook sends our bot at this endpoint
-
-
-@app.route("/dialogflow", methods=['POST'])
-def webhook():
-    req = request.get_json(silent=True, force=True)
-
-    print("Request:")
-    print(json.dumps(req, indent=4))
-
-    # res = makeWebhookResult(req)
-
-    # res = json.dumps(res, indent=4)
-    # print(res)
-    # r = make_response(res)
-    # r.headers['Content-Type'] = 'application/json'
-    # return r
-    return "yea"
-
 
 @app.route("/bot", methods=['GET', 'POST'])
 def receive_message():
+    lang = None
     if request.method == 'GET':
         """Before allowing people to message your bot, Facebook has implemented a verify token
         that confirms all requests that your bot receives came from Facebook."""
@@ -47,25 +30,30 @@ def receive_message():
         for event in output['entry']:
             messaging = event['messaging']
             for message in messaging:
+                # This if segment is called whenever a user click a button inside the facebook chat
+                if 'postback' in message and 'payload' in message['postback']:
+                    payload = message['postback']['payload'].strip()
+                    print("payload: ", payload)
+                # This segment is called when a user sends a text message
                 if message.get('message'):
                     # Facebook Messenger ID for user so we know where to send response back to
                     recipient_id = message['sender']['id']
                     if message['message'].get('text'):
                         txt = message['message'].get('text')
-                        print(txt * 100)
                         # Call a function to recognize the language
-                        lang = get_lang_from_text(txt)
+                        if lang:
+                            serve_bot(txt, lang)
+                        else:
+                            lang = get_lang_from_text(txt)
+                            select_help_type_message(recipient_id)
+                            # serve_bot(txt, lang)
                         print("*" * 20)
                         print("LANG: " + lang)
                         print("*" * 20)
 
                         # response_sent_text = get_message()
-                        # send_message(recipient_id, response_sent_text)
+                        # send_message(recipient_id)
                         return ""
-                    # if user sends us a GIF, photo,video, or any other non-text item
-                    if message['message'].get('attachments'):
-                        response_sent_nontext = get_message()
-                        send_message(recipient_id, response_sent_nontext)
     return "Message Processed"
 
 
@@ -84,6 +72,14 @@ def get_message():
     return random.choice(sample_responses)
 
 
+def serve_bot(txt, lang):
+    msg = "Hello! I'm lil P. I am here to help you! What will you need today?"
+    # Medical
+    # DMV
+    # Immigration
+    pass
+
+
 def get_lang_from_text(txt):
     """Detects the text's language."""
     translate_client = translate.Client()
@@ -100,8 +96,40 @@ def get_lang_from_text(txt):
     # uses PyMessenger to send response to user
 
 
-def send_message(recipient_id, response):
+def select_help_type_message(recipient_id, response=None):
     # sends user the text message provided via input response parameter
+         # construct payload and send it
+    payload = {
+        "recipient": {"id": recipient_id},
+        "message": {
+            "attachment": {
+                "type": "template",
+                "payload": {
+                    "template_type": "button",
+                    "text": "Hello! I'm lil' P. I'm here to help you! What help do you need today?",
+                    "buttons":  [
+                        {
+                            "type": "postback",
+                            "title": "Immigration",
+                            "payload": "immigration"
+                        },
+                        {
+                            "type": "postback",
+                            "title": "DMV",
+                            "payload": "dmv"
+                        },
+                        {
+                            "type": "postback",
+                            "title": "Medical",
+                            "payload": "medical"
+                        },
+                    ]
+                }}}}
+    r = requests.post(
+        'https://graph.facebook.com/v2.6/me/messages?access_token={}'.format(ACCESS_TOKEN), json=payload)
+    return "success"
+
+    # else, we just send the text from twilio
     bot.send_text_message(recipient_id, response)
     return "success"
 

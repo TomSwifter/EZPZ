@@ -1,3 +1,7 @@
 filled_test.pdf
 *.swp
 __pycache__
+.app.py.un~
+ezpz-test-29a9b838799d.json
+tmp.py
+venv/

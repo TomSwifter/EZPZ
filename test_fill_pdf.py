@@ -13,7 +13,8 @@ details = parser.form_details('i9')
 print(details)
 
 # STEP 5: fill form with form_name and answers dict, returns bytes
-dummy_answers = {'ssn': '123456789', 'first_name': 'lil\'', 'last_name': 'pea', 'middle_initial': '', 'address': '21 Pea Rd', 'apt_number': '1c', 'city': 'New York', 'state': 'NY', 'date_of_birth': '02/02/2019', 'employee_email': 'lil.pea@ez.pz', 'employee_telephone': '1-800-PEA', 'cb_i_am_a': 1, 'today_date': '02/03/2019'}
+dummy_answers = {'ssn': '123456789', 'first_name': 'lil\'', 'last_name': 'pea', 'middle_initial': '', 'address': '21 Pea Rd', 'apt_number': '1c', 'city': 'New York',
+                 'state': 'NY', 'date_of_birth': '02/02/2019', 'employee_email': 'lil.pea@ez.pz', 'employee_telephone': '1-800-PEA', 'cb_citizen': 'yes', 'today_date': '02/03/2019'}
 filled_form = parser.fill_form('i9', dummy_answers)
 
 # for debugging

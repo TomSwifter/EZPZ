@@ -17,6 +17,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tomeraharoni/Documents/Pr
 
 @app.route("/bot", methods=['GET', 'POST'])
 def receive_message():
+    forms = []
     lang = None
     if request.method == 'GET':
         """Before allowing people to message your bot, Facebook has implemented a verify token
@@ -39,8 +40,8 @@ def receive_message():
                     elif payload == 'immigration':
                         select_help_type_message(
                             recipient_id, 'immigration')
-                    elif payload == 'medical':
-                        select_help_type_message(recipient_id, 'medical')
+                    elif payload == 'financial':
+                        select_help_type_message(recipient_id, 'financial')
 
                 # This segment is called when a user sends a text message
                 if message.get('message'):
@@ -76,14 +77,13 @@ def verify_fb_token(token_sent):
 
 # chooses a random message to send to the user
 def get_message():
-    sample_responses = ["Homo", "Gay", "Zayan", "Totah"]
     # return selected item to the user
     return random.choice(sample_responses)
 
 
 def serve_bot(txt, lang):
     msg = "Hello! I'm lil P. I am here to help you! What will you need today?"
-    # Medical
+    # financial
     # DMV
     # Immigration
     pass
@@ -136,7 +136,7 @@ def select_help_type_message(recipient_id, pl, response=None):
                         ]
                     }}}}
 
-    elif pl == 'medical':
+    elif pl == 'financial':
         payload = {
             "recipient": {"id": recipient_id},
             "message": {
@@ -144,11 +144,11 @@ def select_help_type_message(recipient_id, pl, response=None):
                     "type": "template",
                     "payload": {
                         "template_type": "button",
-                        "text": "Sure! These are some medical documents that we're currently supporting",
+                        "text": "Sure! These are some financial documents that we're currently supporting",
                         "buttons":  [
                             {
                                 "type": "postback",
-                                "title": "Application for insurance",
+                                "title": "credit application",
                                 "payload": "insurance"
                             },
                         ]
@@ -199,8 +199,8 @@ def select_help_type_message(recipient_id, pl, response=None):
                             },
                             {
                                 "type": "postback",
-                                "title": "Medical",
-                                "payload": "medical"
+                                "title": "financial",
+                                "payload": "financial"
                             },
                         ]
                     }}}}

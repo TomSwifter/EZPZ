@@ -2,7 +2,7 @@ last_name,Last Name (Given Name),last_name,text,
 first_name,First Name (Given Name),first_name,text,
 middle_initial,Middle Initial,middle_initial,text,
 other_last_name,Other Last Names Used (if any),other_last_name,text,
-address,Address (Street Number and Name),Address,text,
+address,What's your home address (Street Number and Name),Address,text,
 apt_number,Apt. Number,apt_number,text,
 city,City or Town,city,text,
 state,State,state,text,
@@ -17,7 +17,7 @@ cb_permenant_resident,A lawful permanent resident,cb_permenant_resident,bool,ali
 cb_alien_authorized,An alien authorized to work,cb_alien_authorized,bool,alien_registration_number2
 alien_registration_number1,Alien Registration Number/USCIS Number,allen_registration_number,text,
 alien_registration_number2,Alien Registration Number/USCIS Number,alien_registration_number,text,
-alien_authorized_date_exp,until (expiration date, if applicable, mm/dd/yyyy). Some aliens may write "N/A" in the expiration date field. (See instructions),alien_authorized_date_exp,text,
+alien_authorized_date_exp,until (expiration date), if applicable, mm/dd/yyyy). Some aliens may write "N/A" in the expiration date field. (See instructions),alien_authorized_date_exp,text,
 i94_number,Form I-94 Admission Number,i94_number,text,
 foreign_passport_number,Foreign Passport Number,foreign_passport_number,text,foreign_passport_country
 foreign_passport_country,Country of Issuance,foreign_passport_country,text,

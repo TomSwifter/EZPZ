@@ -7,6 +7,8 @@ import urllib
 import json
 import os
 import requests
+from pdf_parser import PDFParser
+from pdf_utils import save
 
 app = Flask(__name__)
 ACCESS_TOKEN = 'EAAEW1dXyjCIBABM7snAgcZCD1YCWdk0Lh5UIUUdZB9IRzjuChnoAnskAHMFhYVV6WBjbZCZAd5cFD5QQIod6URsa7fRKIuQ0ydJlQKXo3ZAiSRYzZCDdLG1PEJPv6SbUBZBNsJ5ZBnBZArlAFFA62QbCE4rzScSVwssRsel2YaokZArAZDZD'
@@ -14,9 +16,12 @@ VERIFY_TOKEN = 'TOO_EZ'
 bot = Bot(ACCESS_TOKEN)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tomeraharoni/Documents/Projects/devfest/ezpz-test-29a9b838799d.json"
 
+user_data = {}
+
 
 @app.route("/bot", methods=['GET', 'POST'])
 def receive_message():
+    global user_data
     forms = ["I-9", "I-765", "I-20", "credit application", "MV-44", "MV-45"]
     lang = None
     if request.method == 'GET':
@@ -36,7 +41,7 @@ def receive_message():
                     payload = message['postback']['payload'].strip()
                     recipient_id = message['sender']['id']
                     if payload in forms:
-                        start_questions(payload)
+                        start_questions(recipient_id, payload)
                     if payload == 'dmv':
                         select_help_type_message(recipient_id, 'dmv')
                     elif payload == 'immigration':
@@ -46,26 +51,25 @@ def receive_message():
                         select_help_type_message(recipient_id, 'financial')
 
                 # This segment is called when a user sends a text message
+                recipient_id = message['sender']['id']
                 if message.get('message'):
-                    # Facebook Messenger ID for user so we know where to send response back to
-                    recipient_id = message['sender']['id']
-                    if message['message'].get('text'):
+                    if 'text' in message['message'] and recipient_id in user_data and 'in_progress' in user_data[recipient_id]:
+                        print('we are in the process of filling your form')
+                        txt = message['message'].get('text')
+                        start_questions(recipient_id, None, txt)
+                        return ""
+                    elif message['message'].get('text'):
                         txt = message['message'].get('text')
                         # Call a function to recognize the language
-                        if lang:
-                            serve_bot(txt, lang)
-                        else:
+                        if not lang:
                             lang = get_lang_from_text(txt)
+                            user_data[recipient_id] = {}
+                            user_data[recipient_id]['lang'] = lang
+                            print("User language: ", lang)
                             select_help_type_message(
                                 recipient_id, 'default')
-                            # serve_bot(txt, lang)
-                        print("*" * 20)
-                        print("LANG: " + lang)
-                        print("*" * 20)
-
-                        # response_sent_text = get_message()
-                        # send_message(recipient_id)
                         return ""
+
     return "Message Processed"
 
 
@@ -110,7 +114,15 @@ def get_lang_from_text(txt):
 def select_help_type_message(recipient_id, pl, response=None):
     # sends user the text message provided via input response parameter
          # construct payload and send it
+    translate_client = translate.Client()
+    target_lang = user_data[recipient_id]['lang']
+
     if pl == 'immigration':
+        text = "Sure! These are some immigration documents that we're currently supporting"
+        text_translated = translate_client.translate(
+            text, target_language=target_lang
+        )
+        text_translated = text_translated['translatedText']
         payload = {
             "recipient": {"id": recipient_id},
             "message": {
@@ -118,7 +130,7 @@ def select_help_type_message(recipient_id, pl, response=None):
                     "type": "template",
                     "payload": {
                         "template_type": "button",
-                        "text": "Sure! These are some immigration documents that we're currently supporting",
+                        "text": text_translated,
                         "buttons":  [
                             {
                                 "type": "postback",
@@ -139,6 +151,16 @@ def select_help_type_message(recipient_id, pl, response=None):
                     }}}}
 
     elif pl == 'financial':
+        text = "Sure! These are some financial documents that we're currently supporting"
+        text_translated = translate_client.translate(
+            text, target_language=target_lang
+        )
+        text_translated = text_translated['translatedText']
+        title = "credit application"
+        title_translated = translate_client.translate(
+            title, target_language=target_lang
+        )
+        title_translated = title_translated['translatedText']
         payload = {
             "recipient": {"id": recipient_id},
             "message": {
@@ -146,17 +168,22 @@ def select_help_type_message(recipient_id, pl, response=None):
                     "type": "template",
                     "payload": {
                         "template_type": "button",
-                        "text": "Sure! These are some financial documents that we're currently supporting",
+                        "text": text_translated,
                         "buttons":  [
                             {
                                 "type": "postback",
-                                "title": "credit application",
+                                "title": title,
                                 "payload": "insurance"
                             },
                         ]
                     }}}}
 
     elif pl == 'dmv':
+        text = "Sure! These are some DMV related documents that we're currently supporting"
+        text_translated = translate_client.translate(
+            text, target_language=target_lang
+        )
+        text_translated = text_translated['translatedText']
         payload = {
             "recipient": {"id": recipient_id},
             "message": {
@@ -164,7 +191,7 @@ def select_help_type_message(recipient_id, pl, response=None):
                     "type": "template",
                     "payload": {
                         "template_type": "button",
-                        "text": "Sure! These are some DMV related documents that we're currently supporting",
+                        "text": text_translated,
                         "buttons":  [
                             {
                                 "type": "postback",
@@ -179,7 +206,31 @@ def select_help_type_message(recipient_id, pl, response=None):
                         ]
                     }}}}
 
-    elif pl == default:
+    elif pl == 'default':
+        text = "Hello! I'm EZPZ I'm here to help you! What help do you need today?"
+        text_translated = translate_client.translate(
+            text, target_language=target_lang
+        )
+        text_translated = text_translated['translatedText']
+
+        immigration = "Immigration"
+        imm_translated = translate_client.translate(
+            immigration, target_language=target_lang
+        )
+        imm_translated = imm_translated['translatedText']
+
+        dmv = "DMV"
+        dmv_translated = translate_client.translate(
+            dmv, target_language=target_lang
+        )
+        dmv_translated = dmv_translated['translatedText']
+
+        financial = "Financial"
+        financial_translated = translate_client.translate(
+            financial, target_language=target_lang
+        )
+        financial_translated = financial_translated['translatedText']
+
         payload = {
             "recipient": {"id": recipient_id},
             "message": {
@@ -187,31 +238,31 @@ def select_help_type_message(recipient_id, pl, response=None):
                     "type": "template",
                     "payload": {
                         "template_type": "button",
-                        "text": "Hello! I'm lil' P. I'm here to help you! What help do you need today?",
+                        "text": text_translated,
                         "buttons":  [
                             {
                                 "type": "postback",
-                                "title": "Immigration",
+                                "title": imm_translated,
                                 "payload": "immigration"
                             },
                             {
                                 "type": "postback",
-                                "title": "DMV",
+                                "title": dmv_translated,
                                 "payload": "dmv"
                             },
                             {
                                 "type": "postback",
-                                "title": "financial",
+                                "title": financial_translated,
                                 "payload": "financial"
                             },
                         ]
                     }}}}
 
-        else:
-            form_name = pl
-            respone = "Sure! We will help you filling the {} form".format(
-                form_name)
-            bot.send_text_message(recipient_id, response)
+    else:
+        form_name = pl
+        respone = "Sure! We will help you filling the {} form".format(
+            form_name)
+        bot.send_text_message(recipient_id, response)
 
     r = requests.post(
         'https://graph.facebook.com/v2.6/me/messages?access_token={}'.format(ACCESS_TOKEN), json=payload)
@@ -222,7 +273,81 @@ def select_help_type_message(recipient_id, pl, response=None):
     return "success"
 
 
-def start_questions(form):
+def start_questions(recipient_id, payload, txt=None):
+    global user_data
+    if not payload:
+        payload = user_data[recipient_id]["current_form"]
+
+    if recipient_id in user_data and 'done' in user_data[recipient_id] and user_data[recipient_id]['done'] == True:
+        print("form is already filled. please reset")
+        return ""
+
+    payload_correct = ''.join([i.lower()
+                               for i in payload if i.isalpha() or i.isdigit()])
+    parser = PDFParser()
+    details = parser.form_details(payload_correct)
+    details = sorted(details, key=lambda k: k['id'])
+    if recipient_id in user_data and 'in_progress' in user_data[recipient_id]:
+        print("in progress")
+        current_key = details[len(user_data[recipient_id]["answers"])]['id']
+        user_data[recipient_id]["answers"][current_key] = txt
+        if len(user_data[recipient_id]["answers"]) == len(details):
+            print("done!")
+            user_data[recipient_id]['done'] = True
+            filled_form = parser.fill_form(
+                user_data[recipient_id]["current_form"], user_data[recipient_id]["answers"])
+            save(filled_form, 'filled_test.pdf')
+            return
+
+        question_object = details[len(
+            user_data[recipient_id]["answers"])]
+        question_type = question_object["type"]
+        question_text = question_object["question"]
+        added_string = ""
+        if question_type == "bool":
+            added_string = "(Yes / No)"
+        text_to_send = "{} {}".format(question_text, added_string)
+        translate_client = translate.Client()
+        target_lang = user_data[recipient_id]['lang']
+        if target_lang == 'en':
+            translated_text = text_to_send
+        else:
+            translated_text = translate_client.translate(
+                text_to_send, target_language=target_lang
+            )
+            translated_text = translated_text['translatedText']
+        bot.send_text_message(recipient_id, translated_text)
+    else:
+        user_data[recipient_id]["in_progress"] = True
+        user_data[recipient_id]["answers"] = {}
+        user_data[recipient_id]["current_form"] = payload
+
+        translate_client = translate.Client()
+        target_lang = user_data[recipient_id]['lang']
+
+        filling_intro_text = 'Sure! I can help you with your {} form'.format(
+            payload)
+        filling_intro_text_tra = translate_client.translate(
+            filling_intro_text, target_language=target_lang
+        )
+        filling_intro_text_tra = filling_intro_text_tra['translatedText']
+        bot.send_text_message(recipient_id, filling_intro_text_tra)
+
+        question_object = details[0]
+        question_type = question_object["type"]
+        question_text = question_object["question"]
+        added_string = ""
+        if question_type == "bool":
+            added_string = "(Yes / No)"
+        text_to_send = "{} {}".format(question_text, added_string)
+        if target_lang == 'en':
+            translated_text = text_to_send
+        else:
+            translated_text = translate_client.translate(
+                text_to_send, target_language=target_lang
+            )
+            translated_text = translated_text['translatedText']
+        bot.send_text_message(recipient_id, translated_text)
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ import requests
 from pdf_parser import PDFParser
 from pdf_utils import save
 from google.cloud import storage
+from twilio.rest import Client
 
 app = Flask(__name__)
 ACCESS_TOKEN = 'EAAEW1dXyjCIBABM7snAgcZCD1YCWdk0Lh5UIUUdZB9IRzjuChnoAnskAHMFhYVV6WBjbZCZAd5cFD5QQIod6URsa7fRKIuQ0ydJlQKXo3ZAiSRYzZCDdLG1PEJPv6SbUBZBNsJ5ZBnBZArlAFFA62QbCE4rzScSVwssRsel2YaokZArAZDZD'
@@ -62,7 +63,7 @@ def receive_message():
                     elif message['message'].get('text'):
                         txt = message['message'].get('text')
                         # Call a function to recognize the language
-                        if not lang:
+                        if not lang and not txt.isdigit():
                             lang = get_lang_from_text(txt)
                             user_data[recipient_id] = {}
                             user_data[recipient_id]['lang'] = lang
@@ -98,6 +99,7 @@ def serve_bot(txt, lang):
 
 def get_lang_from_text(txt):
     """Detects the text's language."""
+
     translate_client = translate.Client()
 
     # Text can also be a sequence of strings, in which case this method
@@ -280,14 +282,25 @@ def start_questions(recipient_id, payload, txt=None):
         payload = user_data[recipient_id]["current_form"]
 
     if recipient_id in user_data and 'done' in user_data[recipient_id] and user_data[recipient_id]['done'] == True:
-        print("form is already filled. please reset")
+        if txt.isdigit():
+            account_sid = 'AC67c8a0b6b16986da80dc1ac0fdb26808'
+            auth_token = '1db9a6a11f38faafa562d1e72607ba39'
+            client = Client(account_sid, auth_token)
+
+            message = client.messages \
+                .create(
+                    body=user_data[recipient_id]["public_url"],
+                    from_='+12153911286',
+                    to='+1'+txt
+                )
+        else:
+            print("form is already filled. please reset")
         return ""
 
     payload_correct = ''.join([i.lower()
                                for i in payload if i.isalpha() or i.isdigit()])
     parser = PDFParser()
     details = parser.form_details(payload_correct)
-    details = sorted(details, key=lambda k: k['id'])
 
     txt_trans = ""
     if txt is not None:
@@ -337,6 +350,13 @@ def start_questions(recipient_id, payload, txt=None):
             blob.upload_from_filename(source_file_name)
             blob.make_public()
             bot.send_text_message(recipient_id, blob.public_url)
+            user_data[recipient_id]['public_url'] = blob.public_url
+            target_lang = user_data[recipient_id]['lang']
+            translated_text = translate_client.translate(
+                "If you want the file sent to your phone, please type in your number", target_language=target_lang
+            )
+            translated_text = translated_text['translatedText']
+            bot.send_text_message(recipient_id, translated_text)
             return
 
         question_object = details[len(

@@ -14,7 +14,7 @@ class PDFParser():
         return self.forms
 
     # input: form name
-    # output: list of fields to fill in form [{'id': (field_id), 'question': (field question), 'type': ('text'/'bool')}]
+    # output: list of fields to fill in form [{'id': (field_id), 'question': (field question), 'type': ('text'/'bool/option'), 'options': (list of options if 'option' type)}]
     def form_details(self, form_name):
         if not self.check_form_exists(form_name):
             return
@@ -22,7 +22,7 @@ class PDFParser():
         fields = self.models[form_name]
         details = []
         for field in sorted(fields.values(), key=lambda x: x['idx']):
-            details.append({'id': field['id'], 'question': field['name'], 'type': field['type'] if field['type'] != 'char' else 'text'})
+            details.append({'id': field['id'], 'question': field['name'], 'type': field['type'] if field['type'] != 'char' else 'text', 'options': field['options']})
 
         return details
 

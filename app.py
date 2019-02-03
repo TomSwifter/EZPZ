@@ -302,6 +302,7 @@ def start_questions(recipient_id, payload, txt=None):
         question_object = details[len(
             user_data[recipient_id]["answers"])]
         question_type = question_object["type"]
+
         question_text = question_object["question"]
         added_string = ""
         if question_type == "bool":

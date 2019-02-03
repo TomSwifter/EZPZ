@@ -1,2 +1,3 @@
 filled_test.pdf
 *.swp
+__pycache__

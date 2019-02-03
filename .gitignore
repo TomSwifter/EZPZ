@@ -5,3 +5,4 @@ __pycache__
 ezpz-test-29a9b838799d.json
 tmp.py
 venv/
+.DS_Store

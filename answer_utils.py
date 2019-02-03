@@ -9,7 +9,8 @@ def parse_answers(answers, fields):
         field_pointers = field['pointers']
         if field_type == 'char':
             if len(answer_value) != len(field_pointers):
-                print("Warning: field %s expected %d chars but got %d" % (len(answer_value), len(field_pointers)))
+                print("Warning: field %s expected %d chars but got %d" % (field_id, len(answer_value), len(field_pointers)))
+                print("%s vs. %s" % (answer_value, field_pointers))
             for i, pointer in enumerate(field_pointers):
                 val_char = answer_value[i]
                 pointer_values[pointer] = val_char

@@ -14,14 +14,22 @@ def parse_answers(answers, fields):
                 val_char = answer_value[i]
                 pointer_values[pointer] = val_char
         else:
-            field_pointer = field_pointers[0]
-            if field_type == 'bool':
-                if answer_value == 'yes':
-                    field_value = 'X'
-                else:
-                    field_value = ''
+            if field_type == 'option':
+                field_options = field['options']
+                answer_value_int = int(answer_value)
+
+                field_pointer = field_pointers[answer_value_int]
+                field_value = 'X'
             else:
-                field_value = answer_value
+                field_pointer = field_pointers[0]
+                if field_type == 'bool':
+                    if answer_value == 'yes':
+                        field_value = 'X'
+                    else:
+                        field_value = ''
+                else:
+                    field_value = answer_value
 
             pointer_values[field_pointer] = field_value
+
     return pointer_values

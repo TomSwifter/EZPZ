@@ -10,13 +10,13 @@ ID_IDX = 0
 NAME_IDX = 1
 POINTERS_IDX = 2
 TYPE_IDX = 3
-DEPS_IDX = 4
+OPTIONS_IDX = 4
 
 MODELS_DIR_NAME = 'models'
 MODEL_FILE_FORMAT = MODELS_DIR_NAME + '/%s.frmdl'
 
 def load_form_model(form_model_name):
-    global PRIM_DELIM, ID_IDX, NAME_IDX, POINTERS_IDX, TYPE_IDX, DEPS_IDX
+    global PRIM_DELIM, ID_IDX, NAME_IDX, POINTERS_IDX, TYPE_IDX, OPTIONS_IDX
 
     form_model_path = path_for_model(form_model_name)
 
@@ -31,9 +31,9 @@ def load_form_model(form_model_name):
             field_name = line_arr[NAME_IDX]
             field_pointers = split_str(line_arr[POINTERS_IDX])
             field_type = line_arr[TYPE_IDX]
-            field_deps = split_str(line_arr[DEPS_IDX])
+            field_options = split_str(line_arr[OPTIONS_IDX])
             field_idx = i
-            field = {'id': field_id, 'name': field_name, 'pointers': field_pointers, 'type': field_type, 'deps': field_deps, 'idx': i}
+            field = {'id': field_id, 'name': field_name, 'pointers': field_pointers, 'type': field_type, 'options': field_options, 'idx': i}
             form_model[field_id] = field
 
     return form_model

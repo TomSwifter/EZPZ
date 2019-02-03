@@ -9,12 +9,13 @@ import os
 import requests
 from pdf_parser import PDFParser
 from pdf_utils import save
+from google.cloud import storage
 
 app = Flask(__name__)
 ACCESS_TOKEN = 'EAAEW1dXyjCIBABM7snAgcZCD1YCWdk0Lh5UIUUdZB9IRzjuChnoAnskAHMFhYVV6WBjbZCZAd5cFD5QQIod6URsa7fRKIuQ0ydJlQKXo3ZAiSRYzZCDdLG1PEJPv6SbUBZBNsJ5ZBnBZArlAFFA62QbCE4rzScSVwssRsel2YaokZArAZDZD'
 VERIFY_TOKEN = 'TOO_EZ'
 bot = Bot(ACCESS_TOKEN)
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tomeraharoni/Documents/Projects/devfest/ezpz-test-29a9b838799d.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tomeraharoni/Documents/Projects/devfest/EzPz-Test-206dacdf9c1d.json"
 
 user_data = {}
 
@@ -22,7 +23,7 @@ user_data = {}
 @app.route("/bot", methods=['GET', 'POST'])
 def receive_message():
     global user_data
-    forms = ["I-9", "I-765", "I-20", "credit application", "MV-44", "MV-45"]
+    forms = ["I-9", "I-765", "I-20", "credit application", "DMV-44", "DMV-45"]
     lang = None
     if request.method == 'GET':
         """Before allowing people to message your bot, Facebook has implemented a verify token
@@ -195,13 +196,13 @@ def select_help_type_message(recipient_id, pl, response=None):
                         "buttons":  [
                             {
                                 "type": "postback",
-                                "title": "MV-44",
-                                "payload": "MV-44"
+                                "title": "DMV-44",
+                                "payload": "DMV-44"
                             },
                             {
                                 "type": "postback",
-                                "title": "MV-45",
-                                "payload": "MV-45"
+                                "title": "DMV-45",
+                                "payload": "DMV-45"
                             },
                         ]
                     }}}}
@@ -287,22 +288,60 @@ def start_questions(recipient_id, payload, txt=None):
     parser = PDFParser()
     details = parser.form_details(payload_correct)
     details = sorted(details, key=lambda k: k['id'])
+
+    txt_trans = ""
+    if txt is not None:
+        translate_client = translate.Client()
+        txt_trans = translate_client.translate(
+            txt, target_language='en'
+        )
+        txt_trans = txt_trans['translatedText']
+
     if recipient_id in user_data and 'in_progress' in user_data[recipient_id]:
         print("in progress")
         current_key = details[len(user_data[recipient_id]["answers"])]['id']
-        user_data[recipient_id]["answers"][current_key] = txt
+        user_data[recipient_id]["answers"][current_key] = txt_trans
         if len(user_data[recipient_id]["answers"]) == len(details):
             print("done!")
             user_data[recipient_id]['done'] = True
             filled_form = parser.fill_form(
                 user_data[recipient_id]["current_form"], user_data[recipient_id]["answers"])
-            save(filled_form, 'filled_test.pdf')
+
+            import time
+            timestamp = int(time.time())
+            save(filled_form, 'files/filled_test-{}.pdf'.format(timestamp))
+
+            user_info = bot.get_user_info(recipient_id)
+            fname = user_info["first_name"]
+            lname = user_info["last_name"]
+            pdf_form = user_data[recipient_id]["current_form"]
+
+            translate_client = translate.Client()
+            target_lang = user_data[recipient_id]['lang']
+            translated_text = translate_client.translate(
+                "you are done! Here is your file", target_language=target_lang
+            )
+            translated_text = translated_text['translatedText']
+            translated_text = fname + " " + translated_text
+            bot.send_text_message(recipient_id, translated_text)
+
+            storage_client = storage.Client()
+            bucket_name = 'ezpz-files-public'
+            bucket = storage_client.get_bucket(bucket_name)
+            source_file_name = "/Users/tomeraharoni/Documents/Projects/devfest/files/filled_test-{}.pdf".format(
+                timestamp)
+
+            destination_blob_name = "{}-{}-{}-{}-filled.pdf".format(
+                pdf_form, fname, lname, timestamp)
+            blob = bucket.blob(destination_blob_name)
+            blob.upload_from_filename(source_file_name)
+            blob.make_public()
+            bot.send_text_message(recipient_id, blob.public_url)
             return
 
         question_object = details[len(
             user_data[recipient_id]["answers"])]
         question_type = question_object["type"]
-
         question_text = question_object["question"]
         added_string = ""
         if question_type == "bool":
@@ -319,9 +358,10 @@ def start_questions(recipient_id, payload, txt=None):
             translated_text = translated_text['translatedText']
         bot.send_text_message(recipient_id, translated_text)
     else:
+        print("first question!")
         user_data[recipient_id]["in_progress"] = True
         user_data[recipient_id]["answers"] = {}
-        user_data[recipient_id]["current_form"] = payload
+        user_data[recipient_id]["current_form"] = payload_correct
 
         translate_client = translate.Client()
         target_lang = user_data[recipient_id]['lang']
@@ -340,6 +380,12 @@ def start_questions(recipient_id, payload, txt=None):
         added_string = ""
         if question_type == "bool":
             added_string = "(Yes / No)"
+        elif question_type == "option":
+            q_options = question_object["options"]
+            added_string = "\n"
+            for i in range(len(q_options)):
+                added_string = added_string + \
+                    "\n{}) {}".format(i, q_options[i])
         text_to_send = "{} {}".format(question_text, added_string)
         if target_lang == 'en':
             translated_text = text_to_send

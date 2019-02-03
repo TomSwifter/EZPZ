@@ -1,0 +1,4 @@
+full_name,What is your full name as appears on your tax return?,full_name,text,
+ssn,What is your U.S. social security number?,ssn,text,
+address,What is your full address?,address,text,
+cust_num,What is your customer file number?,cust_num,text,

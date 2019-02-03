@@ -17,7 +17,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tomeraharoni/Documents/Pr
 
 @app.route("/bot", methods=['GET', 'POST'])
 def receive_message():
-    forms = []
+    forms = ["I-9", "I-765", "I-20", "credit application", "MV-44", "MV-45"]
     lang = None
     if request.method == 'GET':
         """Before allowing people to message your bot, Facebook has implemented a verify token
@@ -35,6 +35,8 @@ def receive_message():
                 if 'postback' in message and 'payload' in message['postback']:
                     payload = message['postback']['payload'].strip()
                     recipient_id = message['sender']['id']
+                    if payload in forms:
+                        start_questions(payload)
                     if payload == 'dmv':
                         select_help_type_message(recipient_id, 'dmv')
                     elif payload == 'immigration':
@@ -78,7 +80,7 @@ def verify_fb_token(token_sent):
 # chooses a random message to send to the user
 def get_message():
     # return selected item to the user
-    return random.choice(sample_responses)
+    return None
 
 
 def serve_bot(txt, lang):
@@ -177,7 +179,7 @@ def select_help_type_message(recipient_id, pl, response=None):
                         ]
                     }}}}
 
-    else:
+    elif pl == default:
         payload = {
             "recipient": {"id": recipient_id},
             "message": {
@@ -205,6 +207,12 @@ def select_help_type_message(recipient_id, pl, response=None):
                         ]
                     }}}}
 
+        else:
+            form_name = pl
+            respone = "Sure! We will help you filling the {} form".format(
+                form_name)
+            bot.send_text_message(recipient_id, response)
+
     r = requests.post(
         'https://graph.facebook.com/v2.6/me/messages?access_token={}'.format(ACCESS_TOKEN), json=payload)
     return "success"
@@ -212,6 +220,9 @@ def select_help_type_message(recipient_id, pl, response=None):
     # else, we just send the text from twilio
     bot.send_text_message(recipient_id, response)
     return "success"
+
+
+def start_questions(form):
 
 
 if __name__ == "__main__":

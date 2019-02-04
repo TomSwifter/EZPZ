@@ -24,7 +24,8 @@ user_data = {}
 @app.route("/bot", methods=['GET', 'POST'])
 def receive_message():
     global user_data
-    forms = ["I-9", "I-765", "I-20", "credit application", "DMV-44", "DMV-45"]
+    forms = ["I-9", "I-765", "I-20", "credit application",
+             "DMV-44", "DMV-45", "I-10", "DMV-77", "IRS-4506"]
     lang = None
     if request.method == 'GET':
         """Before allowing people to message your bot, Facebook has implemented a verify token
@@ -142,13 +143,8 @@ def select_help_type_message(recipient_id, pl, response=None):
                             },
                             {
                                 "type": "postback",
-                                "title": "I-765",
-                                "payload": "I-765"
-                            },
-                            {
-                                "type": "postback",
-                                "title": "I-20",
-                                "payload": "I-20"
+                                "title": "I-10",
+                                "payload": "I-10"
                             },
                         ]
                     }}}}
@@ -159,11 +155,6 @@ def select_help_type_message(recipient_id, pl, response=None):
             text, target_language=target_lang
         )
         text_translated = text_translated['translatedText']
-        title = "credit application"
-        title_translated = translate_client.translate(
-            title, target_language=target_lang
-        )
-        title_translated = title_translated['translatedText']
         payload = {
             "recipient": {"id": recipient_id},
             "message": {
@@ -175,8 +166,8 @@ def select_help_type_message(recipient_id, pl, response=None):
                         "buttons":  [
                             {
                                 "type": "postback",
-                                "title": title,
-                                "payload": "insurance"
+                                "title": "IRS-4506",
+                                "payload": "IRS-4506"
                             },
                         ]
                     }}}}
@@ -203,8 +194,8 @@ def select_help_type_message(recipient_id, pl, response=None):
                             },
                             {
                                 "type": "postback",
-                                "title": "DMV-45",
-                                "payload": "DMV-45"
+                                "title": "DMV-77",
+                                "payload": "DMV-77"
                             },
                         ]
                     }}}}
@@ -280,7 +271,6 @@ def start_questions(recipient_id, payload, txt=None):
     global user_data
     if not payload:
         payload = user_data[recipient_id]["current_form"]
-
     if recipient_id in user_data and 'done' in user_data[recipient_id] and user_data[recipient_id]['done'] == True:
         if txt.isdigit():
             account_sid = 'AC67c8a0b6b16986da80dc1ac0fdb26808'
@@ -299,9 +289,11 @@ def start_questions(recipient_id, payload, txt=None):
 
     payload_correct = ''.join([i.lower()
                                for i in payload if i.isalpha() or i.isdigit()])
+    print(payload)
+    print(payload_correct)
     parser = PDFParser()
     details = parser.form_details(payload_correct)
-
+    print(details)
     txt_trans = ""
     if txt is not None:
         translate_client = translate.Client()
@@ -311,6 +303,7 @@ def start_questions(recipient_id, payload, txt=None):
         txt_trans = txt_trans['translatedText']
 
     if recipient_id in user_data and 'in_progress' in user_data[recipient_id]:
+
         print("in progress")
         current_key = details[len(user_data[recipient_id]["answers"])]['id']
         user_data[recipient_id]["answers"][current_key] = txt_trans
@@ -332,10 +325,10 @@ def start_questions(recipient_id, payload, txt=None):
             translate_client = translate.Client()
             target_lang = user_data[recipient_id]['lang']
             translated_text = translate_client.translate(
-                "you are done! Here is your file", target_language=target_lang
+                "You are done! Here is your file", target_language=target_lang
             )
             translated_text = translated_text['translatedText']
-            translated_text = fname + " " + translated_text
+            translated_text = translated_text
             bot.send_text_message(recipient_id, translated_text)
 
             storage_client = storage.Client()

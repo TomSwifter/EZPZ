@@ -1,5 +1,4 @@
-applying_for,Are you applying for a license?,applying_license;applying_permit;applying_id_card,option,License;Permit;ID Card
-purpose,What is the purpose of this application?,purpose_new;purpose_update;purpose_change;purpose_replacement;purpose_conditional;purpose_restricted;purpose_transfer,option,New;Renew;Update Info;Change Type;Replacement;Conditional;Restricted;Transfer to NY
 last_name,What is your last name?,last_name,text,
 first_name,What is your first name,first_name,text,
+applying_for,Are you applying for a license?,applying_license;applying_permit;applying_id_card,option,License;Permit;ID Card
 ssn,What is your U.S. social security number?,ssn1;ssn2;ssn3;ssn4;ssn5;ssn6;ssn7;ssn8;ssn9,char,

@@ -32,9 +32,7 @@ We wanted to create something to help with the daunting task of tackling bureauc
 6. Paste your token in the code
 7. Set the following webooks: `messages`, `messaging_postbacks`, `message_deliveries`, `messaging_pre_checkouts`,`boxes`
 8. Provide a valid public https address from which you will be hitting your flask application (you can use ngrok to test locally)
-<br>
-<br>
-![Facebook How To](assets/facebook_howto.png)
+- ![Facebook How To](assets/facebook_howto.png)
 
 ## How to run
 - `python3 app.py`

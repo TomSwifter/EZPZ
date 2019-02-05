@@ -1,5 +1,4 @@
-![EZPZ](assets/logo.png)
-# EZPZ
+# ![EZPZ](assets/logo.png)
 
 ## Overview
 EZPZ is a program that enables automated form filling in English by answering the questions in the form in any language. A user is presented with human readable questions in their language of choice and finally a pdf version of the form filled in English is produced.
@@ -7,16 +6,16 @@ The front end is implemented as a Facebook messenger bot, however the hooks shou
 The back end is the pdf_parser module which parses and fills out the pdf.
 
 ## Why?
-We wanted to create something to help with the daunting task of tackling bureaucracy from the perspective of someone who does not speak the language (often these are the people who are confronted by such bureaucracy the most).
+We wanted to create something to help with the daunting task of tackling bureaucracy from the perspective of someone who is not most comfortable with English (often these are the people who are confronted by such bureaucracy the most).
 
 ## Dependencies
-- python 3.6
-- pip
-- flask 
-- google cloud SDK
-- pymessenger 
-- pdfrw
-- twilio 
+- `python 3.6`
+- `pip`
+- `flask` 
+- `google-cloud-storage`
+- `pymessenger` 
+- `pdfrw`
+- `twilio`
 
 ## Required setup
 1. python 3.6
@@ -33,10 +32,11 @@ We wanted to create something to help with the daunting task of tackling bureauc
 6. Paste your token in the code
 7. Set the following webooks: `messages`, `messaging_postbacks`, `message_deliveries`, `messaging_pre_checkouts`,`boxes`
 8. Provide a valid public https address from which you will be hitting your flask application (you can use ngrok to test locally)
+<br>
 ![Facebook How To](assets/facebook_howto.png)
 
 ## How to run
-`python3 app.py`
+- `python3 app.py`
 
 ### Intended bot flow
 - User messages bot
@@ -62,4 +62,4 @@ This is still a POC project. It will require more work to bring to a robust stat
 - More bot integrations (twilio, telegram, etc.)
 - Preprocess more forms
 - Dynamic, automated pdf preprocessing using image recognition (hard since bureaucratic forms vary wildly between one another)
-
+- More...

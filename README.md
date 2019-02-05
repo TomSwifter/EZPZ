@@ -1,7 +1,5 @@
 ![EZPZ](assets/logo.png)
-
 # EZPZ
-======================
 
 ## Overview
 EZPZ is a program that enables automated form filling in English by answering the questions in the form in any language. A user is presented with human readable questions in their language of choice and finally a pdf version of the form filled in English is produced.

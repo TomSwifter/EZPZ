@@ -51,8 +51,8 @@ We wanted to create something to help with the daunting task of tackling bureauc
 ## Authors
 - Alon Ezer
 - Eden Dolev
+- Jonathan Bofman
 - Tomer Aharoni
-- Yoni Bofman
 
 ## Future work
 This is still a POC project. It will require more work to bring to a robust state

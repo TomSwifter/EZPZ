@@ -13,8 +13,8 @@ from google.cloud import storage
 from twilio.rest import Client
 
 app = Flask(__name__)
-ACCESS_TOKEN = 'EAAEW1dXyjCIBABM7snAgcZCD1YCWdk0Lh5UIUUdZB9IRzjuChnoAnskAHMFhYVV6WBjbZCZAd5cFD5QQIod6URsa7fRKIuQ0ydJlQKXo3ZAiSRYzZCDdLG1PEJPv6SbUBZBNsJ5ZBnBZArlAFFA62QbCE4rzScSVwssRsel2YaokZArAZDZD'
-VERIFY_TOKEN = 'TOO_EZ'
+ACCESS_TOKEN = 'ACCESS_TOKEN_HERE'
+VERIFY_TOKEN = 'ACCESS_TOKEN_HERE'
 bot = Bot(ACCESS_TOKEN)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tomeraharoni/Documents/Projects/devfest/EzPz-Test-206dacdf9c1d.json"
 
